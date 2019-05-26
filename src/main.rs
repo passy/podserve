@@ -1,3 +1,12 @@
+#![warn(
+     clippy::all,
+     clippy::restriction,
+     clippy::pedantic,
+     clippy::nursery,
+     clippy::cargo,
+ )]
+#![allow(clippy::missing_docs_in_private_items, clippy::implicit_return, clippy::filter_map)]
+
 use actix_web::{server, App, HttpRequest, Responder};
 use id3;
 use std::fs;
@@ -26,12 +35,12 @@ fn greet(req: &HttpRequest) -> impl Responder {
 
 fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Error> {
     Ok(fs::read_dir(path)?
-        .filter_map(|p| p.ok())
+        .filter_map(Result::ok)
         .map(|p| p.path())
         .map(id3::Tag::read_from_path)
-        .filter_map(|id| id.ok())
+        .filter_map(Result::ok)
         .map(|id| PodData {
-            artist: id.artist().map(|s| s.to_owned()),
+            artist: id.artist().map(ToOwned::to_owned),
         })
         .collect::<Vec<_>>())
 }
