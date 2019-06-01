@@ -75,7 +75,7 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
         .map(|(path, tag): (std::path::PathBuf, id3::Tag)| PodData {
             artist: tag.artist().map(ToOwned::to_owned),
             title: tag.title().map(ToOwned::to_owned),
-            filename: path.into_os_string().into_string().expect("Valid filename"),
+            filename: path.file_name().and_then(|s| s.to_str()).expect("Valid filename").to_string(),
         })
         .collect::<Vec<_>>())
 }
