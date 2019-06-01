@@ -5,6 +5,6 @@ authors = ["Pascal Hartig <phartig@rdrei.net>"]
 edition = "2018"
 
 [dependencies]
-actix-web = "0.7.19"
 rss = "1.8.0"
 id3 = "0.3.0"
+rocket = "0.4.1"
