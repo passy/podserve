@@ -17,7 +17,6 @@ use rocket::{get, response, routes, State};
 use rss;
 use std::fs;
 use std::path::Path;
-use std::rc::Rc;
 
 #[derive(Debug)]
 enum Error {
@@ -36,6 +35,7 @@ impl From<std::io::Error> for Error {
 struct PodData {
     artist: Option<String>,
     title: Option<String>,
+    filename: String,
 }
 
 fn mkfeed(pods: &[PodData]) -> Result<rss::Channel, String> {
@@ -52,11 +52,14 @@ fn mkfeed(pods: &[PodData]) -> Result<rss::Channel, String> {
 }
 
 fn mkitem(pd: &PodData) -> Result<rss::Item, String> {
-    let title = pd
-        .title
-        .clone()
-        .ok_or_else(|| "Title not set".to_string())?;
-    rss::ItemBuilder::default().title(title).build()
+    rss::ItemBuilder::default()
+        .title(pd.title.clone())
+        .guid(
+            rss::GuidBuilder::default()
+                .value(pd.filename.clone())
+                .build()?,
+        )
+        .build()
 }
 
 #[get("/")]
@@ -68,11 +71,11 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
     Ok(fs::read_dir(path)?
         .filter_map(Result::ok)
         .map(|p| p.path())
-        .map(id3::Tag::read_from_path)
-        .filter_map(Result::ok)
-        .map(|id| PodData {
-            artist: id.artist().map(ToOwned::to_owned),
-            title: id.title().map(ToOwned::to_owned),
+        .filter_map(|p| id3::Tag::read_from_path(&p).map(|t| (p, t)).ok())
+        .map(|(path, tag): (std::path::PathBuf, id3::Tag)| PodData {
+            artist: tag.artist().map(ToOwned::to_owned),
+            title: tag.title().map(ToOwned::to_owned),
+            filename: path.into_os_string().into_string().expect("Valid filename"),
         })
         .collect::<Vec<_>>())
 }
