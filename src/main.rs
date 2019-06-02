@@ -76,7 +76,11 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
         .map(|(path, tag): (std::path::PathBuf, id3::Tag)| PodData {
             artist: tag.artist().map(ToOwned::to_owned),
             title: tag.title().map(ToOwned::to_owned),
-            filename: path.file_name().and_then(|s| s.to_str()).expect("Valid filename").to_string(),
+            filename: path
+                .file_name()
+                .and_then(|s| s.to_str())
+                .expect("Valid filename")
+                .to_string(),
         })
         .collect::<Vec<_>>())
 }
@@ -84,13 +88,14 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
 fn rocket() -> Result<rocket::Rocket, std::io::Error> {
     let podcasts = PodcastState(read_podcast_dir("podcasts")?);
 
-    Ok(
-        rocket::ignite()
-            .manage(podcasts)
-            .mount("/", routes![index])
-            // TODO: Make this configurable.
-            .mount("/podcasts", StaticFiles::from(concat!(env!("CARGO_MANIFEST_DIR"), "/podcasts")))
-        )
+    Ok(rocket::ignite()
+        .manage(podcasts)
+        .mount("/", routes![index])
+        // TODO: Make this configurable.
+        .mount(
+            "/podcasts",
+            StaticFiles::from(concat!(env!("CARGO_MANIFEST_DIR"), "/podcasts")),
+        ))
 }
 
 fn main() -> Result<(), std::io::Error> {
