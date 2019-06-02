@@ -14,6 +14,7 @@
 
 use id3;
 use rocket::{get, response, routes, State};
+use rocket_contrib::serve::StaticFiles;
 use rss;
 use std::fs;
 use std::path::Path;
@@ -83,7 +84,13 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
 fn rocket() -> Result<rocket::Rocket, std::io::Error> {
     let podcasts = PodcastState(read_podcast_dir("podcasts")?);
 
-    Ok(rocket::ignite().mount("/", routes![index]).manage(podcasts))
+    Ok(
+        rocket::ignite()
+            .manage(podcasts)
+            .mount("/", routes![index])
+            // TODO: Make this configurable.
+            .mount("/podcasts", StaticFiles::from(concat!(env!("CARGO_MANIFEST_DIR"), "/podcasts")))
+        )
 }
 
 fn main() -> Result<(), std::io::Error> {
