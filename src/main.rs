@@ -64,6 +64,7 @@ struct PodData {
     title: Option<String>,
     filename: String,
     timestamp: SystemTime,
+    len: u64,
 }
 
 fn mkfeed(opt: &Opt, pods: &[PodData]) -> Result<rss::Channel, String> {
@@ -128,8 +129,12 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
                 .expect("Valid filename")
                 .to_string(),
             timestamp: path.metadata().and_then(|m| m.created()).unwrap_or_else(|e| {
-                log::warn!("Failed to obtain created timestamp: {:?}", e);
+                log::warn!("Failed to obtain created timestamp for {:?}: {}", &path, e);
                 SystemTime::now()
+            }),
+            len: path.metadata().map(|m| m.len()).unwrap_or_else(|e| {
+                log::warn!("Unable to determine file length for {:?}: {}", &path, e);
+                0
             })
         })
         .collect::<Vec<_>>())
