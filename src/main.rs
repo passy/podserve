@@ -21,7 +21,7 @@ use rocket_contrib::serve::StaticFiles;
 use rss;
 use std::env;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use structopt::StructOpt;
 use url;
@@ -30,6 +30,8 @@ use url;
 #[structopt(name = "podserve")]
 struct Opt {
     base_url: url::Url,
+    #[structopt(short = "d", long = "directory", default_value = "podcasts")]
+    directory: PathBuf,
 }
 
 #[derive(Debug)]
@@ -149,15 +151,14 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
 }
 
 fn rocket(opt: Opt) -> Result<rocket::Rocket, std::io::Error> {
-    let podcasts = PodcastState(read_podcast_dir("podcasts")?);
+    let podcasts = PodcastState(read_podcast_dir(&opt.directory)?);
     let cwd = env::current_dir()?;
 
     Ok(rocket::ignite()
         .manage(podcasts)
-        .manage(opt)
         .mount("/", routes![index])
-        // TODO: Make this configurable.
-        .mount("/podcasts", StaticFiles::from(cwd.join("podcasts"))))
+        .mount("/podcasts", StaticFiles::from(cwd.join(&opt.directory)))
+        .manage(opt))
 }
 
 fn main() -> Result<(), std::io::Error> {
