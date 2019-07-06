@@ -137,7 +137,7 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
                 .to_string(),
             timestamp: path
                 .metadata()
-                .and_then(|m| m.created())
+                .and_then(|m| m.modified())
                 .unwrap_or_else(|e| {
                     log::warn!("Failed to obtain created timestamp for {:?}: {}", &path, e);
                     SystemTime::now()
