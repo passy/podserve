@@ -65,6 +65,7 @@ impl From<url::ParseError> for Error {
 struct PodData {
     artist: Option<String>,
     title: Option<String>,
+    comment: Option<String>,
     filename: String,
     timestamp: SystemTime,
     len: u64,
@@ -97,7 +98,7 @@ fn mkitem(opt: &Opt, pd: &PodData) -> Result<rss::Item, Error> {
     let full_url = full_url_res.as_str();
     rss::ItemBuilder::default()
         .title(pd.title.clone())
-        .description("".to_string())
+        .description(pd.comment.clone().unwrap_or("".to_string()))
         .guid(rss::GuidBuilder::default().value(filename).build()?)
         .enclosure(
             rss::EnclosureBuilder::default()
@@ -130,6 +131,7 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
         .map(|(path, tag): (std::path::PathBuf, id3::Tag)| PodData {
             artist: tag.artist().map(ToOwned::to_owned),
             title: tag.title().map(ToOwned::to_owned),
+            comment: Some(tag.comments().map(|c| c.text.to_string()).collect::<Vec<_>>().concat()),
             filename: path
                 .file_name()
                 .and_then(|s| s.to_str())
