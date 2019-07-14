@@ -14,6 +14,9 @@ By default, `podserve` will read the MP3s in a `podcasts/` subdirectory
 and serve them, generating an absolute URL based on the prefix URL
 provided as first positional argument.
 
+`podserve` will extract ID3 tags and modification time to generate
+the corresponding attributes on the RSS feed.
+
 ## Serving Static Files
 
 `podserve` uses Rocket and the Rocket-Contrib static file serving mechanism.
