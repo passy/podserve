@@ -124,30 +124,43 @@ fn index(
 }
 
 fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Error> {
+    let filename = |path: &Path| path.file_name()
+                        .and_then(|s| s.to_str())
+                        .expect("Valid filename")
+                        .to_string();
+    let timestamp = |path: &Path| path.metadata()
+                        .and_then(|m| m.modified())
+                        .unwrap_or_else(|e| {
+                            log::warn!("Failed to obtain created timestamp for {:?}: {}", &path, e);
+                            SystemTime::now()
+                        });
+    let len = |path: &Path| path.metadata().map(|m| m.len()).unwrap_or_else(|e| {
+                        log::warn!("Unable to determine file length for {:?}: {}", &path, e);
+                        0
+                    });
     Ok(fs::read_dir(path)?
         .filter_map(Result::ok)
         .map(|p| p.path())
-        .filter_map(|p| id3::Tag::read_from_path(&p).map(|t| (p, t)).ok())
-        .map(|(path, tag): (std::path::PathBuf, id3::Tag)| PodData {
-            artist: tag.artist().map(ToOwned::to_owned),
-            title: tag.title().map(ToOwned::to_owned),
-            comment: Some(tag.comments().map(|c| c.text.to_string()).collect::<Vec<_>>().concat()),
-            filename: path
-                .file_name()
-                .and_then(|s| s.to_str())
-                .expect("Valid filename")
-                .to_string(),
-            timestamp: path
-                .metadata()
-                .and_then(|m| m.modified())
-                .unwrap_or_else(|e| {
-                    log::warn!("Failed to obtain created timestamp for {:?}: {}", &path, e);
-                    SystemTime::now()
-                }),
-            len: path.metadata().map(|m| m.len()).unwrap_or_else(|e| {
-                log::warn!("Unable to determine file length for {:?}: {}", &path, e);
-                0
-            }),
+        .map(|p| id3::Tag::read_from_path(&p).map(|t| (p.clone(), t)).map_err(|e| (p, e)))
+        .map(|t| {
+            match t {
+                Ok((path, tag)) => PodData {
+                    artist: tag.artist().map(ToOwned::to_owned),
+                    title: tag.title().map(ToOwned::to_owned),
+                    comment: Some(tag.comments().map(|c| c.text.to_string()).collect::<Vec<_>>().concat()),
+                    filename: filename(&path),
+                    timestamp: timestamp(&path),
+                    len: len(&path),
+                },
+                Err((path, _)) => PodData {
+                    artist: None,
+                    title: Some(filename(&path)),
+                    comment: None,
+                    filename: filename(&path),
+                    timestamp: timestamp(&path),
+                    len: len(&path),
+                }
+            }
         })
         .collect::<Vec<_>>())
 }
