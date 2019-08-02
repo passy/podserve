@@ -26,12 +26,24 @@ use std::time::SystemTime;
 use structopt::StructOpt;
 use url;
 
+mod config;
+
 #[derive(StructOpt, Debug)]
 #[structopt(name = "podserve")]
 struct Opt {
     base_url: url::Url,
     #[structopt(short = "d", long = "directory", default_value = "podcasts")]
+    /// Directory to serve podcast MP3 files from.
     directory: PathBuf,
+    #[structopt(long)]
+    /// Write a default configuration file to the given path an exit.
+    write_config: Option<PathBuf>,
+}
+
+#[derive(Debug)]
+enum RunMode<'a> {
+    Serve,
+    WriteConfig(&'a PathBuf),
 }
 
 #[derive(Debug)]
@@ -189,9 +201,24 @@ fn rocket(opt: Opt) -> Result<rocket::Rocket, std::io::Error> {
         .manage(opt))
 }
 
+fn mode_from_opt<'a>(opt: &'a Opt) -> RunMode<'a> {
+    if let Some(path) = &opt.write_config {
+        RunMode::WriteConfig(path)
+    } else {
+        RunMode::Serve
+    }
+}
+
+fn write_config(path: &PathBuf) -> Result<(), std::io::Error> {
+    unimplemented!()
+}
+
 fn main() -> Result<(), std::io::Error> {
     pretty_env_logger::try_init().unwrap();
     let opt = Opt::from_args();
-    rocket(opt)?.launch();
+    match mode_from_opt(&opt) {
+        RunMode::Serve => { let _ = rocket(opt)?.launch(); },
+        RunMode::WriteConfig(path) => write_config(path)?,
+    }
     Ok(())
 }
