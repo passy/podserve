@@ -35,7 +35,7 @@ struct Opt {
     #[structopt(short = "d", long = "directory", default_value = "podcasts")]
     /// Directory to serve podcast MP3 files from.
     directory: PathBuf,
-    #[structopt(long)]
+    #[structopt(long = "write-config")]
     /// Write a default configuration file to the given path an exit.
     write_config: Option<PathBuf>,
 }
@@ -209,16 +209,17 @@ fn mode_from_opt<'a>(opt: &'a Opt) -> RunMode<'a> {
     }
 }
 
-fn write_config(path: &PathBuf) -> Result<(), std::io::Error> {
-    unimplemented!()
-}
-
-fn main() -> Result<(), std::io::Error> {
+fn main() -> Result<(), failure::Error> {
     pretty_env_logger::try_init().unwrap();
     let opt = Opt::from_args();
     match mode_from_opt(&opt) {
-        RunMode::Serve => { let _ = rocket(opt)?.launch(); },
-        RunMode::WriteConfig(path) => write_config(path)?,
+        RunMode::Serve => {
+            let _ = rocket(opt)?.launch();
+        }
+        RunMode::WriteConfig(path) => {
+            config::write_config(&Default::default(), path)?;
+            eprintln!("Config written to '{}'", path.to_str().expect("Valid path"));
+        }
     }
     Ok(())
 }

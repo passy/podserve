@@ -1,3 +1,11 @@
+use failure::Error;
+use serde_derive::{Deserialize, Serialize};
+use std::fs;
+use std::io::prelude::*;
+use std::path::PathBuf;
+use toml;
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
     title: String,
     description: String,
@@ -11,4 +19,17 @@ impl Default for Config {
                 .to_string(),
         }
     }
+}
+
+pub fn read_config(path: &PathBuf) -> Result<Config, Error> {
+    let mut input = String::new();
+    fs::File::open(path).and_then(|mut f| f.read_to_string(&mut input))?;
+    toml::from_str(&input).map_err(|e| e.into())
+}
+
+pub fn write_config(config: &Config, path: &PathBuf) -> Result<(), Error> {
+    let content = toml::to_string_pretty(config)?;
+    fs::File::create(path)
+        .and_then(|mut f| f.write_all(content.as_bytes()))
+        .map_err(|e| e.into())
 }
