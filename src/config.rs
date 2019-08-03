@@ -7,8 +7,8 @@ use toml;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
-    title: String,
-    description: String,
+    pub title: String,
+    pub description: String,
 }
 
 impl Default for Config {
