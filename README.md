@@ -1,4 +1,4 @@
-# podserv
+# podserve
 
 > Just add water.
 
