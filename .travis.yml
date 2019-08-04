@@ -6,11 +6,11 @@ script: |
   cargo test  --verbose --all
 matrix: # additional tests
   include:
-  - rust: 1.37.0-nightly
+  - rust: nightly
     env: CLIPPY=YESPLEASE
     before_script: rustup component add clippy-preview
     script: cargo clippy --all -- -D warnings
-  - rust: 1.37.0-nightly
+  - rust: nightly
     env: RUSTFMT=YESPLEASE
     before_script: rustup component add rustfmt-preview
     script: cargo fmt --all -- --check
