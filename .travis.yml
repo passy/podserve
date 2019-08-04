@@ -1,11 +1,10 @@
 language: rust
-rust:
-  - nightly
 script: |
   cargo build --verbose &&
   cargo test  --verbose --all
 matrix: # additional tests
   include:
+  - rust: nightly
   - rust: nightly-2019-08-01
     env: CLIPPY=YESPLEASE
     before_script: rustup component add clippy
