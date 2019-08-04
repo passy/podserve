@@ -1,6 +1,6 @@
 language: rust
 rust:
-  - nightly
+  - nightly-2019-06-27
 script: |
   cargo build --verbose &&
   cargo test  --verbose --all
