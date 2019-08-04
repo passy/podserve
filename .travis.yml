@@ -1,17 +1,17 @@
 language: rust
 rust:
-  - nightly-2019-06-27
+  - nightly
 script: |
   cargo build --verbose &&
   cargo test  --verbose --all
 matrix: # additional tests
   include:
-  - rust: nightly
+  - rust: nightly-2019-08-01
     env: CLIPPY=YESPLEASE
-    before_script: rustup component add clippy-preview
+    before_script: rustup component add clippy
     script: cargo clippy --all -- -D warnings
-  - rust: nightly
+  - rust: nightly-2019-08-01
     env: RUSTFMT=YESPLEASE
-    before_script: rustup component add rustfmt-preview
+    before_script: rustup component add rustfmt
     script: cargo fmt --all -- --check
 cache: cargo
