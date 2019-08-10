@@ -110,7 +110,7 @@ fn mkitem(opt: &Opt, pd: &PodData) -> Result<rss::Item, Error> {
     let full_url = full_url_res.as_str();
     rss::ItemBuilder::default()
         .title(pd.title.clone())
-        .description(pd.comment.clone().unwrap_or("".to_string()))
+        .description(pd.comment.clone().unwrap_or_else(|| "".to_string()))
         .guid(rss::GuidBuilder::default().value(filename).build()?)
         .enclosure(
             rss::EnclosureBuilder::default()
