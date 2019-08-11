@@ -8,7 +8,8 @@
 #![allow(
     clippy::missing_docs_in_private_items,
     clippy::implicit_return,
-    clippy::filter_map
+    clippy::filter_map,
+    clippy::default_trait_access
 )]
 #![feature(proc_macro_hygiene, decl_macro)]
 
@@ -212,15 +213,14 @@ fn mode_from_opt<'a>(opt: &'a Opt) -> RunMode<'a> {
 }
 
 fn main() -> Result<(), failure::Error> {
-    pretty_env_logger::try_init().unwrap();
+    pretty_env_logger::try_init().expect("Initialize logger");
     let opt = Opt::from_args();
     match mode_from_opt(&opt) {
         RunMode::Serve => {
             let config = opt
                 .config
                 .as_ref()
-                .map(|f| config::read_config(&f).expect("Valid config"))
-                .unwrap_or_else(|| Default::default());
+                .map_or_else(Default::default, |f| config::read_config(f).expect("Valid config"));
             let _ = rocket(config, opt)?.launch();
         }
         RunMode::WriteConfig(path) => {
