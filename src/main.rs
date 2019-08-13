@@ -217,10 +217,9 @@ fn main() -> Result<(), failure::Error> {
     let opt = Opt::from_args();
     match mode_from_opt(&opt) {
         RunMode::Serve => {
-            let config = opt
-                .config
-                .as_ref()
-                .map_or_else(Default::default, |f| config::read_config(f).expect("Valid config"));
+            let config = opt.config.as_ref().map_or_else(Default::default, |f| {
+                config::read_config(f).expect("Valid config")
+            });
             let _ = rocket(config, opt)?.launch();
         }
         RunMode::WriteConfig(path) => {
