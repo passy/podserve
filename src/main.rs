@@ -21,6 +21,7 @@ use rocket::{get, response, routes, State};
 use rocket_contrib::serve::StaticFiles;
 use rss;
 use std::env;
+use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
@@ -140,7 +141,7 @@ fn index(
 fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Error> {
     let filename = |path: &Path| {
         path.file_name()
-            .and_then(|s| s.to_str())
+            .and_then(OsStr::to_str)
             .expect("Valid filename")
             .to_string()
     };
