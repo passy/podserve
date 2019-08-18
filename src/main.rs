@@ -127,6 +127,7 @@ fn mkitem(opt: &Opt, pd: &PodData) -> Result<rss::Item, Error> {
         .map_err(|e| e.into())
 }
 
+#[allow(clippy::needless_pass_by_value)]
 #[get("/")]
 fn index(
     podcasts: State<PodcastState>,
