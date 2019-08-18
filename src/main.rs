@@ -62,19 +62,19 @@ struct PodcastState(Vec<PodData>);
 
 impl From<std::io::Error> for Error {
     fn from(e: std::io::Error) -> Self {
-        Error::IOError(e)
+        Self::IOError(e)
     }
 }
 
 impl From<String> for Error {
     fn from(e: String) -> Self {
-        Error::GenericError(e)
+        Self::GenericError(e)
     }
 }
 
 impl From<url::ParseError> for Error {
     fn from(e: url::ParseError) -> Self {
-        Error::URLParseError(e)
+        Self::URLParseError(e)
     }
 }
 
