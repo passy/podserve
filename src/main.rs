@@ -206,7 +206,7 @@ fn rocket(config: config::Config, opt: Opt) -> Result<rocket::Rocket, std::io::E
         .manage(opt))
 }
 
-fn mode_from_opt<'a>(opt: &'a Opt) -> RunMode<'a> {
+fn mode_from_opt(opt: &Opt) -> RunMode {
     if let Some(path) = &opt.write_config {
         RunMode::WriteConfig(path)
     } else {
