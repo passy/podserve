@@ -1,8 +1,6 @@
-# podserve
+<img height="200" src="assets/logo.png" alt="logo">
 
-> Just add water.
-
-Turns a folder of MP3 files into a hosted RSS feed.
+> Turns a folder of MP3 files into a hosted RSS feed.
 
 ## Usage
 
