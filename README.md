@@ -15,6 +15,21 @@ provided as first positional argument.
 `podserve` will extract ID3 tags and modification time to generate
 the corresponding attributes on the RSS feed.
 
+## Advanced Configuration
+
+You can set some additional configuration parameters through a config file.
+To write a template with default values, run `podserve` with `--write-config`
+and specify the edited configuration when starting it later with `--config`.
+
+```
+podserve https://example.com/ --write-config config.toml
+$VISUAL ./config.toml
+podserve https://example.com/ --config config.toml
+```
+
+*Yes, the URL is required here for no reason other than to make my life easier.
+PRs welcome.*
+
 ## Serving Static Files
 
 `podserve` uses Rocket and the Rocket-Contrib static file serving mechanism.

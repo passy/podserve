@@ -35,6 +35,8 @@ mod config;
 #[derive(StructOpt, Debug)]
 #[structopt(name = "podserve")]
 struct Opt {
+    /// Base URL the webserver is mounted on, used to prefix absolute URLs with.
+    #[structopt(group = "mode")]
     base_url: url::Url,
     #[structopt(short = "d", long = "directory", default_value = "podcasts")]
     /// Directory to serve podcast MP3 files from.
