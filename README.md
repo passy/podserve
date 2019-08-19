@@ -55,4 +55,4 @@ on on it.
 
 ## LICENSE
 
-![MIT](/LICENSE)
+[MIT](/LICENSE)
