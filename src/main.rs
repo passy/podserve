@@ -155,6 +155,7 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
             })
     };
     let len = |path: &Path| {
+        #[allow(clippy::result_map_unwrap_or_else)]
         path.metadata().map(|m| m.len()).unwrap_or_else(|e| {
             log::warn!("Unable to determine file length for {:?}: {}", &path, e);
             0
@@ -219,13 +220,14 @@ fn main() -> Result<(), failure::Error> {
     let opt = Opt::from_args();
     match mode_from_opt(&opt) {
         RunMode::Serve => {
-            let config = opt.config.as_ref().map_or_else(Default::default, |f| {
-                config::read_config(f).expect("Valid config")
-            });
+            let config = opt
+                .config
+                .as_ref()
+                .map_or_else(Default::default, |f| config::read(f).expect("Valid config"));
             let _ = rocket(config, opt)?.launch();
         }
         RunMode::WriteConfig(path) => {
-            config::write_config(&Default::default(), path)?;
+            config::write(&Default::default(), path)?;
             eprintln!("Config written to '{}'", path.to_str().expect("Valid path"));
         }
     }

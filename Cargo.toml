@@ -1,5 +1,6 @@
 [package]
 name = "podserve"
+description = "Spin up an RSS podcast feed webserver from a directories of MP3s"
 version = "0.1.1"
 authors = ["Pascal Hartig <phartig@rdrei.net>"]
 edition = "2018"

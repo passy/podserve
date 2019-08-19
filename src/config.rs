@@ -21,13 +21,13 @@ impl Default for Config {
     }
 }
 
-pub fn read_config(path: &PathBuf) -> Result<Config, Error> {
+pub fn read(path: &PathBuf) -> Result<Config, Error> {
     let mut input = String::new();
     fs::File::open(path).and_then(|mut f| f.read_to_string(&mut input))?;
     toml::from_str(&input).map_err(|e| e.into())
 }
 
-pub fn write_config(config: &Config, path: &PathBuf) -> Result<(), Error> {
+pub fn write(config: &Config, path: &PathBuf) -> Result<(), Error> {
     let content = toml::to_string_pretty(config)?;
     fs::File::create(path)
         .and_then(|mut f| f.write_all(content.as_bytes()))
