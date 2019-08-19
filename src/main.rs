@@ -9,7 +9,9 @@
     clippy::missing_docs_in_private_items,
     clippy::implicit_return,
     clippy::filter_map,
-    clippy::default_trait_access
+    clippy::default_trait_access,
+    // Frankly not sure where this comes from.
+    clippy::multiple_crate_versions
 )]
 #![feature(proc_macro_hygiene, decl_macro)]
 
