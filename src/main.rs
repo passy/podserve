@@ -53,28 +53,28 @@ enum RunMode<'a> {
 
 #[derive(Debug)]
 enum Error {
-    IOError(std::io::Error),
-    URLParseError(url::ParseError),
-    GenericError(String),
+    IO(std::io::Error),
+    URLParse(url::ParseError),
+    Generic(String),
 }
 
 struct PodcastState(Vec<PodData>);
 
 impl From<std::io::Error> for Error {
     fn from(e: std::io::Error) -> Self {
-        Self::IOError(e)
+        Self::IO(e)
     }
 }
 
 impl From<String> for Error {
     fn from(e: String) -> Self {
-        Self::GenericError(e)
+        Self::Generic(e)
     }
 }
 
 impl From<url::ParseError> for Error {
     fn from(e: url::ParseError) -> Self {
-        Self::URLParseError(e)
+        Self::URLParse(e)
     }
 }
 
