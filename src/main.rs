@@ -92,10 +92,17 @@ struct PodData {
     len: u64,
 }
 
+fn mkitunes_channel_ext(config: &config::Config) -> Result<rss::extension::itunes::ITunesChannelExtension, String> {
+    rss::extension::itunes::ITunesChannelExtensionBuilder::default()
+    .author(config.author.clone())
+    .build()
+}
+
 fn mkfeed(opt: &Opt, config: &config::Config, pods: &[PodData]) -> Result<rss::Channel, String> {
     rss::ChannelBuilder::default()
         .title(&config.title)
         .description(&config.description)
+        .itunes_ext(mkitunes_channel_ext(config).ok())
         .items(
             pods.iter()
                 .map(|i| mkitem(opt, i))
