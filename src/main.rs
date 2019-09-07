@@ -19,6 +19,7 @@ use chrono::{offset::Utc, DateTime};
 use id3;
 use log;
 use pretty_env_logger;
+use log::info;
 use rocket::{get, response, routes, State};
 use rocket_contrib::serve::StaticFiles;
 use rss;
@@ -29,8 +30,11 @@ use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use structopt::StructOpt;
 use url;
+use rocket::response::{NamedFile, status::NotFound};
 
 mod config;
+
+const IMAGE_MOUNT_PATH: &str = "/image";
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "podserve")]
@@ -95,6 +99,7 @@ struct PodData {
 fn mkitunes_channel_ext(config: &config::Config) -> Result<rss::extension::itunes::ITunesChannelExtension, String> {
     rss::extension::itunes::ITunesChannelExtensionBuilder::default()
     .author(config.author.clone())
+    .image(config.image.as_ref().map(|_| IMAGE_MOUNT_PATH.to_string()))
     .build()
 }
 
@@ -206,6 +211,17 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
         .collect::<Vec<_>>())
 }
 
+#[allow(clippy::needless_pass_by_value)]
+#[get("/image")]
+fn image(config: State<config::Config>) -> Result<NamedFile, NotFound<String>> {
+    let cwd = env::current_dir().map_err(|_| NotFound("Couldn't open current directory.".to_string()))?;
+    if let Some(image) = config.image {
+        NamedFile::open(cwd.join(image)).map_err(|_| NotFound(format!("Bad path: {:?}", image)))
+    } else {
+        Err(NotFound(format!("Set 'image' in config to enable this endpoint.")))
+    }
+}
+
 fn rocket(config: config::Config, opt: Opt) -> Result<rocket::Rocket, std::io::Error> {
     let podcasts = PodcastState(read_podcast_dir(&opt.directory)?);
     let cwd = env::current_dir()?;
@@ -213,7 +229,7 @@ fn rocket(config: config::Config, opt: Opt) -> Result<rocket::Rocket, std::io::E
     Ok(rocket::ignite()
         .manage(podcasts)
         .manage(config)
-        .mount("/", routes![index])
+        .mount("/", routes![index, image])
         .mount("/podcasts", StaticFiles::from(cwd.join(&opt.directory)))
         .manage(opt))
 }
