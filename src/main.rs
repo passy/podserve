@@ -19,6 +19,7 @@ use chrono::{offset::Utc, DateTime};
 use id3;
 use log;
 use pretty_env_logger;
+use rocket::response::{status::NotFound, NamedFile};
 use rocket::{get, response, routes, State};
 use rocket_contrib::serve::StaticFiles;
 use rss;
@@ -29,7 +30,6 @@ use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 use structopt::StructOpt;
 use url;
-use rocket::response::{NamedFile, status::NotFound};
 
 mod config;
 
@@ -95,11 +95,13 @@ struct PodData {
     len: u64,
 }
 
-fn mkitunes_channel_ext(config: &config::Config) -> Result<rss::extension::itunes::ITunesChannelExtension, String> {
+fn mkitunes_channel_ext(
+    config: &config::Config,
+) -> Result<rss::extension::itunes::ITunesChannelExtension, String> {
     rss::extension::itunes::ITunesChannelExtensionBuilder::default()
-    .author(config.author.clone())
-    .image(config.image.as_ref().map(|_| IMAGE_MOUNT_PATH.to_string()))
-    .build()
+        .author(config.author.clone())
+        .image(config.image.as_ref().map(|_| IMAGE_MOUNT_PATH.to_string()))
+        .build()
 }
 
 fn mkfeed(opt: &Opt, config: &config::Config, pods: &[PodData]) -> Result<rss::Channel, String> {
@@ -213,11 +215,14 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
 #[allow(clippy::needless_pass_by_value)]
 #[get("/image")]
 fn image(config: State<config::Config>) -> Result<NamedFile, NotFound<String>> {
-    let cwd = env::current_dir().map_err(|_| NotFound("Couldn't open current directory.".to_string()))?;
+    let cwd =
+        env::current_dir().map_err(|_| NotFound("Couldn't open current directory.".to_string()))?;
     if let Some(image) = &config.image {
         NamedFile::open(cwd.join(image)).map_err(|_| NotFound(format!("Bad path: {:?}", image)))
     } else {
-        Err(NotFound("Set 'image' in config to enable this endpoint.".to_string()))
+        Err(NotFound(
+            "Set 'image' in config to enable this endpoint.".to_string(),
+        ))
     }
 }
 
