@@ -19,7 +19,6 @@ use chrono::{offset::Utc, DateTime};
 use id3;
 use log;
 use pretty_env_logger;
-use log::info;
 use rocket::{get, response, routes, State};
 use rocket_contrib::serve::StaticFiles;
 use rss;
@@ -215,10 +214,10 @@ fn read_podcast_dir<P: AsRef<Path>>(path: P) -> Result<Vec<PodData>, std::io::Er
 #[get("/image")]
 fn image(config: State<config::Config>) -> Result<NamedFile, NotFound<String>> {
     let cwd = env::current_dir().map_err(|_| NotFound("Couldn't open current directory.".to_string()))?;
-    if let Some(image) = config.image {
+    if let Some(image) = &config.image {
         NamedFile::open(cwd.join(image)).map_err(|_| NotFound(format!("Bad path: {:?}", image)))
     } else {
-        Err(NotFound(format!("Set 'image' in config to enable this endpoint.")))
+        Err(NotFound("Set 'image' in config to enable this endpoint.".to_string()))
     }
 }
 
